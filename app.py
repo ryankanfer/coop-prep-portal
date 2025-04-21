@@ -10,6 +10,12 @@ from oauth2client.service_account import ServiceAccountCredentials
 from pydrive2.auth import GoogleAuth
 from pydrive2.drive import GoogleDrive
 import json
+import base64
+
+def get_base64_image(image_path):
+    with open(image_path, "rb") as f:
+        data = f.read()
+    return base64.b64encode(data).decode()
 
 # --- CONFIGURATION ---
 client = openai.OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
@@ -30,87 +36,88 @@ sheet = client_sheet.open(SHEET_NAME).sheet1
 st.set_page_config(page_title="NYC Co-op Interview Prep", layout="centered")
 
 # --- CSS STYLING ---
-st.markdown("""
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Lato:wght@300;400&display=swap');
+logo_data = get_base64_image("assets/tkt_logo.png")
 
-html, body, .stApp {
-    background: url('assets/background.jpg') no-repeat center center fixed;
-    background-size: cover;
-    font-family: 'Lato', sans-serif;
-    color: #ffffff;
-}
+st.markdown(f"""
+    <style>
+    html, body, .stApp {{
+        background: url('assets/background.jpg') no-repeat center center fixed;
+        background-size: cover;
+        font-family: 'Lato', sans-serif;
+        color: #ffffff;
+    }}
 
-.login-container {
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 16px;
-    padding: 3rem 2rem;
-    backdrop-filter: blur(12px);
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
-    max-width: 450px;
-    margin: 6vh auto;
-    animation: fadeIn 1.2s ease-in-out;
-}
+    .login-container {{
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 16px;
+        padding: 3rem 2rem;
+        backdrop-filter: blur(12px);
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+        max-width: 450px;
+        margin: 6vh auto;
+        animation: fadeIn 1.2s ease-in-out;
+        position: relative;
+    }}
 
-h1 {
-    font-family: 'Playfair Display', serif;
-    font-size: 42px;
-    letter-spacing: 1px;
-    text-align: center;
-    margin-bottom: 0.2em;
-}
+    .login-container::before {{
+        content: "";
+        background-image: url("data:image/png;base64,{logo_data}");
+        background-size: 120px;
+        background-repeat: no-repeat;
+        background-position: center top;
+        display: block;
+        height: 120px;
+        margin-bottom: 2rem;
+    }}
 
-h3 {
-    font-family: 'Lato', sans-serif;
-    font-weight: 300;
-    text-align: center;
-    font-size: 1.1rem;
-    margin-bottom: 2em;
-    color: #f0f0f0;
-}
+    h1 {{
+        font-family: 'Playfair Display', serif;
+        font-size: 42px;
+        letter-spacing: 1px;
+        text-align: center;
+        margin-bottom: 0.2em;
+    }}
 
-input, .stTextInput input, .stTextInput textarea {
-    background-color: #ffffffdd !important;
-    color: #2F4F4F !important;
-    border-radius: 8px;
-    font-family: 'Lato', sans-serif;
-}
+    h3 {{
+        font-family: 'Lato', sans-serif;
+        font-weight: 300;
+        text-align: center;
+        font-size: 1.1rem;
+        margin-bottom: 2em;
+        color: #f0f0f0;
+    }}
 
-.stButton>button {
-    background-color: #ffffff;
-    color: #2F4F4F;
-    border-radius: 8px;
-    font-weight: bold;
-    transition: all 0.3s ease-in-out;
-}
+    input, .stTextInput input, .stTextInput textarea {{
+        background-color: #ffffffdd !important;
+        color: #2F4F4F !important;
+        border-radius: 8px;
+        font-family: 'Lato', sans-serif;
+    }}
 
-.stButton>button:hover {
-    box-shadow: 0 0 10px rgba(255, 255, 255, 0.4);
-    transform: scale(1.03);
-}
+    .stButton>button {{
+        background-color: #ffffff;
+        color: #2F4F4F;
+        border-radius: 8px;
+        font-weight: bold;
+        transition: all 0.3s ease-in-out;
+    }}
 
-.logo-container {
-    text-align: center;
-    margin-bottom: 1em;
-}
+    .stButton>button:hover {{
+        box-shadow: 0 0 10px rgba(255, 255, 255, 0.4);
+        transform: scale(1.03);
+    }}
 
-.logo-container img {
-    max-height: 80px;
-}
+    @keyframes fadeIn {{
+        from {{ opacity: 0; transform: translateY(20px); }}
+        to {{ opacity: 1; transform: translateY(0); }}
+    }}
+    </style>
 
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-</style>
-<div class="login-container">
-    <div class="logo-container">
-        <img src="assets/logo.png" alt="Kaplan Team Logo">
+    <div class="login-container">
+        <h1>The Boardroom is Calling</h1>
+        <h3>This isn’t a checklist. It’s your prep concierge.</h3>
     </div>
-    <h1>The Boardroom is Calling</h1>
-    <h3>This isn’t a checklist. It’s your prep concierge.</h3>
-</div>
 """, unsafe_allow_html=True)
 
 # --- AUTHENTICATION ---
@@ -227,5 +234,43 @@ if submitted:
         log_to_sheet(name, building, listing)
         with open(filepath, "rb") as f:
             st.success("✨ Done! Here’s your download:")
-            st.download_button("📥 Download PDF", f, file_name=filepath, mime="application/pdf")
+            st.markdown("""
+    <style>
+    .success-checkmark {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      display: block;
+      stroke-width: 2;
+      stroke: #fff;
+      stroke-miterlimit: 10;
+      margin: 20px auto;
+      box-shadow: inset 0px 0px 0px #2F4F4F;
+      animation: fill .4s ease-in-out .4s forwards, scale .3s ease-in-out .9s both;
+    }
+    @keyframes fill {
+      100% { box-shadow: inset 0px 0px 0px 30px #2F4F4F; }
+    }
+    @keyframes scale {
+      0%, 100% { transform: none; }
+      50% { transform: scale(1.1); }
+    }
+    </style>
+    <svg class="success-checkmark" viewBox="0 0 52 52">
+      <path fill="none" d="M26,1 C39.255,1 50,11.745 50,25 C50,38.255 39.255,49 26,49 C12.745,49 2,38.255 2,25 C2,11.745 12.745,1 26,1 Z"/>
+      <path fill="none" d="M14,27 L22,34 L38,16" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+""", unsafe_allow_html=True)
+            st.download_button("📥 Download PDF", f, file_name=filepath, mime="application/pdf", use_container_width=True)
         st.info(f"A copy was saved to Google Drive here: {link}")
+
+        # 🎉 Add confetti
+        st.balloons()
+
+        # 💬 Add final message
+        st.markdown("""
+        <div style="margin-top: 2rem; text-align: center; font-size: 1.2rem; font-family: 'Playfair Display', serif; color: #ffffff;">
+            <em>The board will be <strong>very</strong> impressed.</em><br>
+            You're prepped. You're polished. You're approved.
+        </div>
+        """, unsafe_allow_html=True)
