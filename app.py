@@ -41,78 +41,75 @@ background_data = get_base64_image("assets/background.jpg")
 
 st.markdown(f"""
 <style>
-/* === Background Overlay === */
+html, body, .stApp {{
+    background: url("data:image/jpg;base64,{background_data}") no-repeat center center fixed;
+    background-size: cover;
+    font-family: 'Playfair Display', serif;
+    color: #ffffff;
+}}
+
 html::before {{
     content: "";
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0, 0, 0, 0.4);
+    background: rgba(0, 0, 0, 0.35);
     z-index: 0;
 }}
 
-/* === Logo Animation & Sizing === */
-.login-logo {{
-    opacity: 0;
-    transform: translateY(20px);
-    animation: logoFadeIn 1.5s ease-out forwards;
-    animation-delay: 0.5s;
-    display: block;
-    margin: 0 auto 1.5rem;
-    width: 180px;
-    max-width: 90%;
+.login-overlay {{
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    margin: 5vh auto 2rem;
 }}
 
-@keyframes logoFadeIn {{
-    to {{
-        opacity: 1;
-        transform: translateY(0);
-    }}
-}}
-
-/* === Headline + Subhead Fade === */
-h1, h3 {{
-    opacity: 0;
-    animation: textFadeIn 1.2s ease-out forwards;
-    animation-delay: 1.2s;
-}}
-
-@keyframes textFadeIn {{
-    to {{
-        opacity: 1;
-    }}
-}}
-
-/* === Background Image (Base64) === */
-html, body, .stApp {{
-    background: url("data:image/jpg;base64,{background_data}") no-repeat center center fixed;
-    background-size: cover;
-    font-family: 'Lato', sans-serif;
+.login-title {{
+    font-size: 2.8rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
     color: #ffffff;
+    text-shadow: 0 0 10px rgba(0,0,0,0.6);
 }}
 
-/* === Form Field Styling === */
+.stTextInput, .stTextArea {{
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    padding: 1rem;
+}}
+
 .stTextInput > div > input,
 .stTextArea > div > textarea {{
-    background-color: #ffffffcc;
-    color: #2F4F4F !important;
-    border-radius: 8px;
+    background-color: rgba(255, 255, 255, 0.25);
+    color: #ffffff;
     font-family: 'Lato', sans-serif;
+    border: none;
 }}
 
-/* === Button Styling === */
+label, .stTextInput label, .stTextArea label {{
+    color: #ffffff;
+    font-weight: 300;
+}}
+
 .stButton>button {{
-    background-color: #ffffff;
-    color: #2F4F4F;
+    background-color: #6366f1;
+    color: #ffffff;
+    font-weight: 600;
     border-radius: 8px;
-    font-weight: bold;
     transition: all 0.3s ease-in-out;
 }}
 
 .stButton>button:hover {{
-    box-shadow: 0 0 10px rgba(255, 255, 255, 0.4);
-    transform: scale(1.03);
+    transform: scale(1.04);
+    box-shadow: 0 0 12px #a5b4fc;
 }}
+
 </style>
+""", unsafe_allow_html=True)
+st.markdown(f"""
+<div class="login-overlay">
+    <h1 class="login-title">NYC Co-op Interview<br>Prep Assistant</h1>
+</div>
 """, unsafe_allow_html=True)
 st.markdown(f"""
 <div class="login-overlay">
