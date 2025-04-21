@@ -1,15 +1,12 @@
-# app.py
-
 import streamlit as st
 import base64
 import openai
 import datetime
 from fpdf import FPDF
+from io import BytesIO
 
-# --- SETUP ---
 openai.api_key = st.secrets["OPENAI_API_KEY"]
 
-# --- IMAGES ---
 def get_base64_image(img_path):
     with open(img_path, "rb") as img:
         return base64.b64encode(img.read()).decode()
@@ -26,7 +23,7 @@ def set_background(image_path):
         </style>
     """, unsafe_allow_html=True)
 
-# --- SESSION ---
+# Session state setup
 if "stage" not in st.session_state:
     st.session_state.stage = "login"
 
@@ -36,24 +33,52 @@ if "buyer" not in st.session_state:
 if "responses" not in st.session_state:
     st.session_state.responses = {}
 
-# --- PAGE 1: LOGIN ---
+# PAGE 1: LOGIN
 if st.session_state.stage == "login":
-    set_background("background.jpg")  
+    set_background("background.jpg")
     st.markdown("""
         <h1 style='text-align: center;'>NYC Co-op Interview Prep Assistant</h1>
         <p style='text-align: center;'>The Board is Ready for You</p>
     """, unsafe_allow_html=True)
-
     username = st.text_input("Username")
     password = st.text_input("Password", type="password")
     if st.button("Login"):
         if username.strip() == "client" and password == "interviewready25":
-            st.session_state.stage = "lobby"
+            st.session_state.stage = "onboarding"
             st.rerun()
         else:
             st.error("Invalid credentials")
 
-# --- PAGE 2: LOBBY ---
+# PAGE 1.5: ONBOARDING COPY
+elif st.session_state.stage == "onboarding":
+    set_background("background.jpg")
+    st.markdown("""
+        <div style='background-color: rgba(255,255,255,0.05); padding: 2rem; border-radius: 12px;'>
+        <h2 style='text-align: center;'>Welcome to the simulation.</h2>
+        <p style='font-size: 1.1rem;'>
+        Buying into a co-op in NYC? You’re not just buying a home — you’re buying shares in a corporation. And that corporation has a board that acts less like management… and more like a tight-knit neighborhood deciding if they want you at their block party.<br><br>
+
+        They’ve seen your application. They’ve reviewed your financials.<br>
+        But now? They want to see if you fit in.<br><br>
+
+        This app is your prep concierge.<br><br>
+
+        You’ll enter a simulation modeled on actual co-op board interviews.<br>
+        Expect questions about your money, lifestyle, pets, and how you plan to use the apartment.<br>
+        How you answer shapes how the board reacts.<br><br>
+
+        No paperwork. No pressure.<br>
+        Just you, the board, and a little friendly judgment.
+        </p>
+        <div style='text-align: center;'>
+            <button onclick="window.location.reload();" style='margin-top: 1.5rem; padding: 0.75rem 1.5rem; font-size: 1rem; background-color: #2f4f4f; color: white; border: none; border-radius: 8px;'>Enter Lobby</button>
+        </div>
+        </div>
+    """, unsafe_allow_html=True)
+    st.session_state.stage = "lobby"
+    st.stop()
+
+# PAGE 2: LOBBY
 elif st.session_state.stage == "lobby":
     set_background("lobby.jpg")
     st.markdown("""
@@ -77,43 +102,19 @@ elif st.session_state.stage == "lobby":
         st.session_state.stage = "interview"
         st.rerun()
 
-# --- PAGE 3: BOARD INTERVIEW ---
+# PAGE 3: BOARD INTERVIEW
 elif st.session_state.stage == "interview":
     set_background("board_interview.jpg")
     buyer = st.session_state.buyer
 
     def get_questions():
         return [
-            {
-                "member": "Evelyn Sharp",
-                "question": f"Tell us why you're interested in {buyer['building']}.",
-                "trigger": "building"
-            },
-            {
-                "member": "Randy Gold",
-                "question": f"As someone who is {buyer['work_type']}, how do you ensure financial stability month to month?",
-                "trigger": "work_type"
-            },
-            {
-                "member": "Evelyn Sharp",
-                "question": f"What about your current income of {buyer['income']} gives you confidence to take this on?",
-                "trigger": "income"
-            },
-            {
-                "member": "Randy Gold",
-                "question": f"Can you explain where your {buyer['assets']} in assets are currently held?",
-                "trigger": "assets"
-            },
-            {
-                "member": "Maya Patel",
-                "question": f"Do you anticipate hosting often? What's your lifestyle like as a {buyer['occupation']}?",
-                "trigger": "occupation"
-            },
-            {
-                "member": "Evelyn Sharp",
-                "question": f"The board has had mixed experiences with pets. You marked '{buyer['pets']}'. Can you clarify?",
-                "trigger": "pets"
-            }
+            {"member": "Evelyn Sharp", "question": f"Tell us why you're interested in {buyer['building']}.", "trigger": "building"},
+            {"member": "Randy Gold", "question": f"As someone who is {buyer['work_type']}, how do you ensure financial stability month to month?", "trigger": "work_type"},
+            {"member": "Evelyn Sharp", "question": f"What about your current income of {buyer['income']} gives you confidence to take this on?", "trigger": "income"},
+            {"member": "Randy Gold", "question": f"Can you explain where your {buyer['assets']} in assets are currently held?", "trigger": "assets"},
+            {"member": "Maya Patel", "question": f"Do you anticipate hosting often? What's your lifestyle like as a {buyer['occupation']}?", "trigger": "occupation"},
+            {"member": "Evelyn Sharp", "question": f"The board has had mixed experiences with pets. You marked '{buyer['pets']}'. Can you clarify?", "trigger": "pets"}
         ]
 
     if "questions" not in st.session_state:
@@ -129,15 +130,12 @@ elif st.session_state.stage == "interview":
         reply = st.text_area("Your Response:", key=f"reply_{idx}")
         st.session_state.responses[q['member'] + '_' + q['trigger']] = reply
 
-        # Optional reactions
         if reply:
-            st.markdown(f"*{q['member']} reacts:* Thank you, {buyer['name']}, that’s helpful.")
+            from random import choice
+            reactions = ["Thank you,", "Interesting.", "Noted.", "Appreciated."]
+            st.markdown(f"*{q['member']} reacts:* {choice(reactions)} {buyer['name']}.")
 
-    st.markdown("<p style='text-align:center; color:#aaa;'>You're doing great.</p>", unsafe_allow_html=True)
-
-    # --- FINAL CTA ---
     if st.button("Finish Interview & View Feedback"):
-        from io import BytesIO
 
         def generate_feedback_pdf(name, responses):
             pdf = FPDF()
@@ -167,7 +165,7 @@ elif st.session_state.stage == "interview":
         st.success(f"Board review complete. Welcome home, {buyer['name']}.")
 
         st.download_button(
-            label="📥 Download Board Summary",
+            label="\U0001F4E5 Download Board Summary",
             data=pdf_file.getvalue(),
             file_name=f"{buyer['name'].replace(' ', '_')}_Board_Feedback.pdf",
             mime="application/pdf"
