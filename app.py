@@ -39,6 +39,10 @@ logo_data = get_base64_image("assets/tkt_logo.png")
 background_data = get_base64_image("assets/background.jpg")
 
 # --- CSS ---
+# --- CSS STYLING ---
+logo_data = get_base64_image("assets/tkt_logo.png")
+background_data = get_base64_image("assets/background.jpg")
+
 st.markdown(f"""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Lato:wght@300;400;600&display=swap');
@@ -58,53 +62,43 @@ html::before {{
     z-index: 0;
 }}
 
-.glass-container {{
-    background: rgba(255, 255, 255, 0.08);
-    backdrop-filter: blur(14px);
-    border-radius: 18px;
-    padding: 2rem;
-    max-width: 500px;
-    margin: 3rem auto;
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
-    position: relative;
-    z-index: 2;
-    text-align: center;
-}}
-
+/* Logo */
 .login-logo {{
-    width: 240px;
-    margin: 0 auto 1.5rem;
     display: block;
-    opacity: 0;
-    transform: translateY(20px);
-    animation: fadeIn 1.5s ease-out forwards;
+    margin: 4vh auto 1rem;
+    width: 160px;
 }}
 
+/* Headline & Subhead */
 .login-heading {{
-    font-size: 2.6rem;
+    font-size: 2.8rem;
     font-family: 'Playfair Display', serif;
     font-weight: 700;
     text-align: center;
-    margin-bottom: 0.4em;
+    margin: 0 auto 0.2em;
     text-shadow: 0 0 10px rgba(0,0,0,0.45);
-    animation: fadeIn 1.8s ease-out forwards;
 }}
 
 .login-subhead {{
-    font-size: 1.2rem;
+    font-size: 1.1rem;
     font-weight: 400;
     text-align: center;
-    margin-bottom: 2em;
+    margin-bottom: 3rem;
     color: #f1f1f1;
     text-shadow: 0 0 6px rgba(0,0,0,0.3);
-    animation: fadeIn 2s ease-out forwards;
 }}
 
-@keyframes fadeIn {{
-    to {{
-        opacity: 1;
-        transform: translateY(0);
-    }}
+/* Glossy card that holds form fields */
+.glassy-form {{
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(14px);
+    border-radius: 18px;
+    padding: 2rem 2rem 2.5rem;
+    max-width: 400px;
+    margin: 0 auto;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+    position: relative;
+    z-index: 2;
 }}
 
 .stTextInput > div > input,
@@ -115,6 +109,7 @@ html::before {{
     border: 1px solid rgba(255,255,255,0.3);
     padding: 0.5rem;
     font-family: 'Lato', sans-serif;
+    font-weight: 400;
 }}
 
 label, .stTextInput label, .stTextArea label {{
@@ -141,10 +136,19 @@ label, .stTextInput label, .stTextArea label {{
     box-shadow: 0 0 15px #a5b4fc;
 }}
 
+/* Confetti and alerts */
 .stAlert, .stMarkdown > div {{
     text-align: center;
 }}
 </style>
+""", unsafe_allow_html=True)
+
+# Logo, headline, subhead
+st.markdown(f"""
+<img src="data:image/png;base64,{logo_data}" class="login-logo" />
+<h1 class="login-heading">NYC Co-op Interview<br>Prep Assistant</h1>
+<p class="login-subhead">The Board is Ready for You</p>
+<div class="glassy-form">
 """, unsafe_allow_html=True)
 
 # --- HEADER + AUTH ---
