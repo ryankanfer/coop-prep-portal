@@ -69,7 +69,7 @@ st.markdown(f"""
         transform: scale(1.03);
     }}
 
-    ..login-logo {
+    .login-logo {
     display: block;
     margin: 2rem auto 1rem;
     width: 160px; /* bump from 120px */
