@@ -208,9 +208,7 @@ def generate_pdf(name, content, listing):
     pdf.set_font("Helvetica", size=12)
     pdf.image("assets/logo.png", 10, 8, 33)
     pdf.ln(20)
-    pdf.multi_cell(0, 10, f"Co-op Board Interview Prep for {name}
-
-" + content)
+    pdf.multi_cell(0, 10, f"Co-op Board Interview Prep for {name}\n\n" + content)
     if listing:
         pdf.ln(5)
         pdf.set_text_color(0, 0, 255)
