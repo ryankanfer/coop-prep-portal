@@ -1,0 +1,6 @@
+streamlit
+openai
+fpdf
+gspread
+oauth2client
+pydrive2
