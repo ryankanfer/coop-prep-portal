@@ -1,231 +1,159 @@
-# app.py
-
 import streamlit as st
-import openai
-import os
-import datetime
-from fpdf import FPDF
-import gspread
-from oauth2client.service_account import ServiceAccountCredentials
-from pydrive2.auth import GoogleAuth
-from pydrive2.drive import GoogleDrive
-import random
 import base64
+from PIL import Image
+import time
 
-# --- UTILS ---
+# --- FUNCTIONS ---
 def get_base64_image(image_path):
     with open(image_path, "rb") as f:
         data = f.read()
     return base64.b64encode(data).decode()
 
-# --- CONFIGURATION ---
-client = openai.OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
-SCOPES = ["https://www.googleapis.com/auth/drive", "https://www.googleapis.com/auth/spreadsheets"]
-service_account_info = st.secrets["gcp_service_account"]
-credentials = ServiceAccountCredentials.from_json_keyfile_dict(dict(service_account_info), SCOPES)
-client_sheet = gspread.authorize(credentials)
-drive_auth = GoogleAuth()
-drive_auth.credentials = credentials
-drive = GoogleDrive(drive_auth)
-FOLDER_ID = "1A2BcDeFgH_IJKlmnopQRstUvWX"
-SHEET_NAME = "Co-op Prep Submissions"
-sheet = client_sheet.open(SHEET_NAME).sheet1
+def set_background(image_path):
+    bg = get_base64_image(image_path)
+    st.markdown(f"""
+    <style>
+    .stApp {{
+        background: url("data:image/jpg;base64,{bg}") no-repeat center center fixed;
+        background-size: cover;
+    }}
+    </style>
+    """, unsafe_allow_html=True)
 
-# --- VISUALS ---
-st.set_page_config(page_title="NYC Co-op Interview Prep", layout="centered")
-logo_data = get_base64_image("assets/tkt_logo.png")
-background_data = get_base64_image("assets/lobby_background.jpg")  # Doorman/lobby door scene
+# --- PAGE SETUP ---
+st.set_page_config(page_title="NYC Co-op Prep", layout="centered")
+st.markdown("""
+    <style>
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Lato:wght@400;700&display=swap');
 
-# --- QUOTES ---
-tips = [
-    "\U0001f4aa Confidence matters more than credentials.",
-    "\U0001f4b3 Know your debt-to-income ratio.",
-    "\U0001f4ca Practice answering financial questions clearly.",
-    "\U0001f465 Dress for the boardroom, not the brunch."
+    html, body, [class*="css"] {{
+        font-family: 'Lato', sans-serif;
+        color: white;
+    }}
+
+    .login-box {{
+        background-color: rgba(0,0,0,0.4);
+        padding: 2rem;
+        border-radius: 20px;
+        width: 350px;
+        margin: 0 auto;
+        text-align: center;
+    }}
+
+    .login-box input {{
+        margin-top: 0.75rem;
+        width: 100%;
+        padding: 0.75rem;
+        font-size: 1rem;
+        border: none;
+        border-radius: 8px;
+        background-color: rgba(255,255,255,0.1);
+        color: white;
+    }}
+
+    .login-logo {{
+        width: 70px;
+        margin: 1.5rem auto 0;
+        display: block;
+    }}
+
+    .quote {{
+        text-align: center;
+        font-size: 1.1rem;
+        font-style: italic;
+        margin-top: 2rem;
+        opacity: 0.8;
+    }}
+    </style>
+""", unsafe_allow_html=True)
+
+# --- GLOBALS ---
+USERS = {"client": "interviewready25"}
+PREP_QUOTES = [
+    "Know your debt-to-income ratio.",
+    "Smile — but don’t overshare.",
+    "Be concise, confident, and calm.",
+    "This isn’t a test. It’s a vibe check.",
+    "They want to like you. Help them."
 ]
 
-# --- CSS ---
-st.markdown(f"""
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Lato:wght@300;400;600&display=swap');
-html, body, .stApp {{
-    background: url("data:image/jpg;base64,{background_data}") no-repeat center center fixed;
-    background-size: cover;
-    font-family: 'Lato', sans-serif;
-    color: #ffffff;
-}}
-.login-box {{
-    background: rgba(0,0,0,0.45);
-    padding: 2rem;
-    border-radius: 16px;
-    width: 360px;
-    margin: 10vh auto 2vh auto;
-    text-align: center;
-}}
-.login-heading {{
-    font-family: 'Playfair Display', serif;
-    font-size: 2.2rem;
-    font-weight: 700;
-    margin-bottom: 0.5rem;
-    color: #fff;
-}}
-.login-subhead {{
-    font-size: 1rem;
-    margin-bottom: 1.5rem;
-    color: #f0f0f0;
-}}
-.stTextInput > div > input {{
-    background-color: rgba(255,255,255,0.15);
-    border-radius: 6px;
-    border: none;
-    padding: 10px;
-    color: #fff;
-    font-size: 0.95rem;
-}}
-.login-cta img {{
-    width: 80px;
-    margin-top: 1rem;
-}}
-#prep-tip {{
-    text-align: center;
-    margin-top: 3rem;
-    font-size: 1.1rem;
-    font-style: italic;
-    color: #f8f8f8;
-}}
-</style>
-""", unsafe_allow_html=True)
-
-# --- LOGIN ---
-st.markdown(f"""
-<div class="login-box">
-    <h1 class="login-heading">NYC Co-op Interview<br>Prep Assistant</h1>
-    <p class="login-subhead">The Board is Ready for You</p>
-""", unsafe_allow_html=True)
-
-USERS = {"client": "interviewready25"}
+# --- LOGIN LOGIC ---
 if "authenticated" not in st.session_state:
     st.session_state.authenticated = False
+if "login_stage" not in st.session_state:
+    st.session_state.login_stage = "login"
 
+# --- LOGIN PAGE ---
 if not st.session_state.authenticated:
-    username = st.text_input("Username")
-    password = st.text_input("Password", type="password")
-    if st.button("Login"):
-        with st.spinner("Opening the boardroom doors..."):
-            if USERS.get(username.strip()) == password:
-                st.session_state.authenticated = True
-                st.session_state.username = username.strip().capitalize()
-                st.success("Simulated Boardroom")
-            else:
-                st.error("Invalid credentials")
-    st.markdown(f"<div id='prep-tip'>{random.choice(tips)}</div>", unsafe_allow_html=True)
-    st.stop()
+    if st.session_state.login_stage == "login":
+        set_background("/mnt/data/background.jpg")
+        st.markdown("<h1 style='text-align: center; font-family: Playfair Display; font-size: 2.5rem;'>NYC Co-op Interview<br>Prep Assistant</h1>", unsafe_allow_html=True)
+        st.markdown("<p style='text-align: center;'>The Board is Ready for You</p>", unsafe_allow_html=True)
 
-# --- LOBBY PAGE (Step 2) ---
-st.markdown("""
-## Welcome to the Lobby
-You've entered the building. The board is reviewing your file.
+        with st.container():
+            st.markdown("<div class='login-box'>", unsafe_allow_html=True)
+            username = st.text_input("Username")
+            password = st.text_input("Password", type="password")
 
-Fill out the details below so we can prep your custom guide.
-""")
+            if st.button("Login"):
+                with st.spinner("Verifying credentials..."):
+                    time.sleep(1.2)
+                    if USERS.get(username.strip()) == password:
+                        st.session_state.authenticated = True
+                        st.session_state.login_stage = "lobby"
+                        st.experimental_rerun()
+                    else:
+                        st.error("Invalid username or password. Try again or text Ryan directly for access.")
+            st.image("/mnt/data/tkt_logo.png", width=40, output_format='PNG')
+            st.markdown("</div>", unsafe_allow_html=True)
 
-with st.form("prep_form"):
-    name = st.text_input("Your Full Name", value=st.session_state.username)
-    occupation = st.text_input("Occupation")
-    income = st.text_input("Income")
-    assets = st.text_input("Assets")
-    personality = st.text_input("3 Personality Traits")
-    residence = st.text_input("Current Residence")
-    building = st.text_input("Target Building")
-    listing = st.text_input("(optional) StreetEasy Link")
-    file = st.file_uploader("Optional: Upload resume or intro letter")
-    submitted = st.form_submit_button("Submit")
+        quote = PREP_QUOTES[hash(time.time()) % len(PREP_QUOTES)]
+        st.markdown(f"<p class='quote'>🧠 {quote}</p>", unsafe_allow_html=True)
+        st.stop()
 
-# --- HELPER FUNCTIONS ---
-def sanitize_filename(name):
-    return "".join(c for c in name if c.isalnum() or c in (' ', '_', '-')).rstrip()
+# --- LOBBY PAGE ---
+if st.session_state.authenticated and st.session_state.login_stage == "lobby":
+    set_background("/mnt/data/lobby_background.jpg")
+    st.markdown("""
+        <style>
+        .overlay-text {
+            position: absolute;
+            top: 45%;
+            width: 100%;
+            text-align: center;
+            font-size: 2.5rem;
+            font-family: 'Playfair Display', serif;
+            color: white;
+            animation: fadein 2s;
+        }
+        @keyframes fadein {
+            from {{ opacity: 0; }}
+            to   {{ opacity: 1; }}
+        }
+        </style>
+        <div class='overlay-text'>Simulated Boardroom</div>
+    """, unsafe_allow_html=True)
+    time.sleep(2.5)
+    st.session_state.login_stage = "board"
+    st.experimental_rerun()
 
-def generate_prep_guide(profile):
-    model = "gpt-4o"
-    response = client.chat.completions.create(
-        model=model,
-        messages=[
-            {"role": "system", "content": "You are a luxury NYC broker helping prep a buyer for a co-op interview."},
-            {"role": "user", "content": f"""
-Name: {profile['name']}
-Occupation: {profile['occupation']}
-Income: {profile['income']}
-Assets: {profile['assets']}
-Personality: {profile['personality']}
-Residence: {profile['residence']}
-Building: {profile['building']}
+# --- BOARD INTERVIEW PAGE ---
+if st.session_state.authenticated and st.session_state.login_stage == "board":
+    set_background("/mnt/data/board_interview.jpg")
+    st.markdown("""
+        <h1 style="text-align: center; margin-top: 2rem; font-size: 2.5rem; font-family: Playfair Display;">
+            Welcome to the Interview
+        </h1>
+        <p style="text-align: center; margin-bottom: 3rem;">The Board will see you now.</p>
+    """, unsafe_allow_html=True)
 
-Create:
-1. 5 potential questions
-2. Advice for financial transparency
-3. What to avoid
-4. A pep talk in 2 sentences
-"""}
-        ],
-        max_tokens=1000
-    )
-    return response.choices[0].message.content
+    with st.form("prep_form"):
+        name = st.text_input("Your Name")
+        occupation = st.text_input("Occupation")
+        building = st.text_input("Target Building")
+        traits = st.text_area("What three words describe you?")
+        submit = st.form_submit_button("Submit")
 
-def generate_pdf(name, content, listing):
-    pdf = FPDF()
-    pdf.add_page()
-    pdf.set_font("Helvetica", size=12)
-    pdf.image("assets/logo.png", 10, 8, 33)
-    pdf.ln(20)
-    pdf.multi_cell(0, 10, f"Co-op Board Interview Prep for {name}\n\n" + content)
-    if listing:
-        pdf.ln(5)
-        pdf.set_text_color(0, 0, 255)
-        pdf.cell(0, 10, f"Listing: {listing}", ln=True, link=listing)
-    pdf.set_text_color(100, 100, 100)
-    timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
-    pdf.set_y(-20)
-    pdf.cell(0, 10, f"Prepared by Ryan Kanfer | @ryanxkanfer | {timestamp}", align='C')
-    filename = sanitize_filename(f"{name}_Coop_Prep.pdf")
-    pdf.output(filename)
-    return filename
-
-def upload_to_drive(filepath, buyer_name):
-    now = datetime.datetime.now().strftime("%Y-%m-%d")
-    file_drive = drive.CreateFile({"title": f"{now}_{sanitize_filename(buyer_name)}.pdf", "parents": [{"id": FOLDER_ID}]})
-    file_drive.SetContentFile(filepath)
-    file_drive.Upload()
-    return file_drive['alternateLink']
-
-def log_to_sheet(name, building, listing):
-    now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    sheet.append_row([name, building, now, listing])
-
-# --- SUBMIT HANDLER ---
-if submitted:
-    profile = {
-        "name": name,
-        "occupation": occupation,
-        "income": income,
-        "assets": assets,
-        "personality": personality,
-        "residence": residence,
-        "building": building
-    }
-
-    with st.spinner("Creating your interview playbook..."):
-        guide = generate_prep_guide(profile)
-
-    guide_edit = st.text_area("Edit your guide if needed:", value=guide, height=400)
-
-    if st.button("Finalize Guide"):
-        filepath = generate_pdf(name, guide_edit, listing)
-        link = upload_to_drive(filepath, name)
-        log_to_sheet(name, building, listing)
-
-        with open(filepath, "rb") as f:
-            st.success("Ready for download")
-            st.download_button("📥 Download PDF", f, file_name=filepath, mime="application/pdf")
-        st.info(f"Saved to Drive: {link}")
+    if submit:
+        st.success("You're prepped, polished, and ready.")
         st.balloons()
-        st.markdown("<div style='text-align:center; font-size:1.2rem; font-family: Playfair Display;'><em>The board will be <strong>very</strong> impressed.</em></div>", unsafe_allow_html=True)
