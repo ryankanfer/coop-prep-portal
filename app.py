@@ -12,24 +12,17 @@ from pydrive2.drive import GoogleDrive
 import json
 import base64
 
-
+# === HELPER: Image Encoding ===
 def get_base64_image(image_path):
     with open(image_path, "rb") as f:
         data = f.read()
     return base64.b64encode(data).decode()
 
-
-# --- CONFIGURATION ---
+# === CONFIG ===
 client = openai.OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
-
-SCOPES = [
-    "https://www.googleapis.com/auth/drive",
-    "https://www.googleapis.com/auth/spreadsheets",
-]
+SCOPES = ["https://www.googleapis.com/auth/drive", "https://www.googleapis.com/auth/spreadsheets"]
 service_account_info = st.secrets["gcp_service_account"]
-credentials = ServiceAccountCredentials.from_json_keyfile_dict(
-    dict(service_account_info), SCOPES
-)
+credentials = ServiceAccountCredentials.from_json_keyfile_dict(dict(service_account_info), SCOPES)
 client_sheet = gspread.authorize(credentials)
 drive_auth = GoogleAuth()
 drive_auth.credentials = credentials
@@ -39,15 +32,13 @@ FOLDER_ID = "1A2BcDeFgH_IJKlmnopQRstUvWX"
 SHEET_NAME = "Co-op Prep Submissions"
 sheet = client_sheet.open(SHEET_NAME).sheet1
 
-# --- PAGE SETTINGS ---
+# === PAGE SETUP ===
 st.set_page_config(page_title="NYC Co-op Interview Prep", layout="centered")
-
-# --- CSS STYLING ---
 logo_data = get_base64_image("assets/tkt_logo.png")
 background_data = get_base64_image("assets/background.jpg")
 
-st.markdown(
-    f"""
+# === CSS ===
+st.markdown(f"""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Lato:wght@300;400;600&display=swap');
 
@@ -66,67 +57,62 @@ html::before {{
     z-index: 0;
 }}
 
-.glass-form-wrapper {{
+h1 {{
+    font-family: 'Playfair Display', serif;
+    font-size: 2.8rem;
+    font-weight: 700;
+    text-align: center;
+    text-shadow: 0 0 10px rgba(0,0,0,0.45);
+}}
+
+h3 {{
+    font-family: 'Lato', sans-serif;
+    font-weight: 400;
+    text-align: center;
+    color: #f1f1f1;
+    margin-top: -10px;
+    margin-bottom: 2rem;
+    text-shadow: 0 0 6px rgba(0,0,0,0.3);
+}}
+
+.logo-img {{
+    display: block;
+    margin: 0 auto 1rem;
+    width: 120px;
+}}
+
+.glass-box {{
     background: rgba(255, 255, 255, 0.08);
     backdrop-filter: blur(14px);
-    border-radius: 20px;
+    border-radius: 18px;
     padding: 2rem;
-    max-width: 480px;
-    margin: 6vh auto;
+    max-width: 420px;
+    margin: 2rem auto;
     box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
-    position: relative;
-    z-index: 2;
-    text-align: center;
 }}
 
-.login-logo {{
-    width: 110px;
-    margin-bottom: 1.5rem;
-}}
-
-h1.login-heading {{
-    font-size: 2.5rem;
-    font-family: 'Playfair Display', serif;
-    font-weight: 700;
-    text-shadow: 0 0 10px rgba(0,0,0,0.4);
-    margin-bottom: 0.3rem;
-}}
-
-p.login-subhead {{
-    font-size: 1.1rem;
-    color: #eeeeee;
-    text-shadow: 0 0 6px rgba(0,0,0,0.3);
-    margin-bottom: 2rem;
-}}
-
-.stTextInput > div > input,
-.stTextArea > div > textarea {{
+.stTextInput > div > input {{
     background-color: rgba(255,255,255,0.15);
     color: #ffffff;
     border-radius: 8px;
     border: 1px solid rgba(255,255,255,0.3);
     padding: 0.5rem;
-    font-family: 'Lato', sans-serif;
 }}
 
-label, .stTextInput label, .stTextArea label {{
+.stTextInput label, .stTextArea label {{
     color: #e0e0e0;
     font-weight: 300;
-    font-family: 'Lato', sans-serif;
 }}
 
 .stButton>button {{
     background-color: #6366f1;
     color: #ffffff;
-    font-family: 'Lato', sans-serif;
     font-weight: 600;
     font-size: 1rem;
     border-radius: 8px;
     padding: 0.5rem 1.5rem;
     width: 100%;
     transition: all 0.3s ease-in-out;
-    box-shadow: 0 0 0 rgba(0,0,0,0);
-    margin-top: 1rem;
 }}
 
 .stButton>button:hover {{
@@ -134,40 +120,37 @@ label, .stTextInput label, .stTextArea label {{
     box-shadow: 0 0 15px #a5b4fc;
 }}
 </style>
-""",
-    unsafe_allow_html=True,
-)
+""", unsafe_allow_html=True)
 
-st.markdown(
-    f"""
-<div class="glass-form-wrapper">
-    <img src="data:image/png;base64,{logo_data}" class="login-logo" />
-    <h1 class="login-heading">NYC Co-op Interview<br>Prep Assistant</h1>
-    <p class="login-subhead">The Board is Ready for You</p>
-""",
-    unsafe_allow_html=True,
-)
+# === HEADER ===
+st.markdown(f"""
+    <img src="data:image/png;base64,{logo_data}" class="logo-img" />
+    <h1>NYC Co-op Interview<br>Prep Assistant</h1>
+    <h3>The Board is Ready for You</h3>
+""", unsafe_allow_html=True)
 
-# --- AUTHENTICATION ---
+# === LOGIN BOX ===
+st.markdown('<div class="glass-box">', unsafe_allow_html=True)
+
 USERS = {"client": "interviewready25"}
 if "authenticated" not in st.session_state:
     st.session_state.authenticated = False
 
 if not st.session_state.authenticated:
-    username = st.text_input("Username")
+    username = st.text_input("Username").strip()
     password = st.text_input("Password", type="password")
-
     if st.button("Login"):
-        if USERS.get(username.strip()) == password:
+        if USERS.get(username) == password:
             st.session_state.authenticated = True
         else:
             st.error("Invalid username or password. Try again or text Ryan directly for access.")
-
-    st.markdown("</div>", unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
     st.stop()
 
-# --- FORM ---
-st.markdown('<div class="glass-form-wrapper">', unsafe_allow_html=True)
+st.markdown('</div>', unsafe_allow_html=True)
+
+# === FORM ===
+st.markdown('<div class="glass-box">', unsafe_allow_html=True)
 st.subheader("Fill this out — we'll handle the rest.")
 with st.form("prep_form"):
     name = st.text_input("Buyer Name")
@@ -180,6 +163,99 @@ with st.form("prep_form"):
     listing = st.text_input("StreetEasy Link (optional — paste it in for a pretty PDF)")
     file = st.file_uploader("Optional: Upload resume or personal letter")
     submitted = st.form_submit_button("Get me approved")
-st.markdown("</div>", unsafe_allow_html=True)
+st.markdown('</div>', unsafe_allow_html=True)
 
-# --- REMAINDER OF LOGIC OMITTED FOR CLARITY ---
+# === PDF FUNCTIONS ===
+def sanitize_filename(name):
+    return "".join(c for c in name if c.isalnum() or c in (' ', '_', '-')).rstrip()
+
+def generate_prep_guide(profile):
+    try:
+        model = "gpt-4o"
+        response = client.chat.completions.create(
+            model=model,
+            messages=[
+                {"role": "system", "content": "You are a high-end NYC real estate agent helping a buyer prep for a co-op board interview."},
+                {"role": "user", "content": f"""
+Name: {profile['name']}
+Occupation: {profile['occupation']}
+Income: {profile['income']}
+Assets: {profile['assets']}
+Personality: {profile['personality']}
+Residence: {profile['residence']}
+Building: {profile['building']}
+
+Please generate:
+1. Common board interview questions
+2. Tips for answering financial/personal Qs with grace
+3. What to avoid
+4. Final reminders before walking in
+"""}
+            ],
+            max_tokens=1000
+        )
+        return response.choices[0].message.content
+    except:
+        return "We're using a backup model — still great, just fewer bells & whistles."
+
+def generate_pdf(name, content, listing):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Helvetica", size=12)
+    pdf.image("assets/logo.png", 10, 8, 33)
+    pdf.ln(20)
+    pdf.multi_cell(0, 10, f"Co-op Board Interview Prep for {name}\n\n" + content)
+    if listing:
+        pdf.ln(5)
+        pdf.set_text_color(0, 0, 255)
+        pdf.cell(0, 10, f"Listing: {listing}", ln=True, link=listing)
+    pdf.set_text_color(100, 100, 100)
+    timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+    pdf.set_y(-20)
+    pdf.cell(0, 10, f"Prepared by Ryan Kanfer | @ryanxkanfer | {timestamp}", align='C')
+    filename = sanitize_filename(f"{name}_Coop_Prep.pdf")
+    pdf.output(filename)
+    return filename
+
+def upload_to_drive(filepath, buyer_name):
+    now = datetime.datetime.now().strftime("%Y-%m-%d")
+    file_drive = drive.CreateFile({"title": f"{now}_{sanitize_filename(buyer_name)}.pdf", "parents": [{"id": FOLDER_ID}]})
+    file_drive.SetContentFile(filepath)
+    file_drive.Upload()
+    return file_drive['alternateLink']
+
+def log_to_sheet(name, building, listing):
+    now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    sheet.append_row([name, building, now, listing])
+
+# === ON SUBMIT ===
+if submitted:
+    profile = {
+        "name": name,
+        "occupation": occupation,
+        "income": income,
+        "assets": assets,
+        "personality": personality,
+        "residence": residence,
+        "building": building
+    }
+    with st.spinner("Generating your co-op prep guide..."):
+        guide = generate_prep_guide(profile)
+
+    guide_edit = st.text_area("Review or edit your guide before finalizing:", value=guide, height=400)
+
+    if st.button("Finalize PDF"):
+        filepath = generate_pdf(name, guide_edit, listing)
+        link = upload_to_drive(filepath, name)
+        log_to_sheet(name, building, listing)
+        with open(filepath, "rb") as f:
+            st.success("✨ Done! Here’s your download:")
+            st.download_button("📥 Download PDF", f, file_name=filepath, mime="application/pdf", use_container_width=True)
+        st.info(f"A copy was saved to Google Drive here: {link}")
+        st.balloons()
+        st.markdown("""
+        <div style="margin-top: 2rem; text-align: center; font-size: 1.2rem; font-family: 'Playfair Display', serif; color: #ffffff;">
+            <em>The board will be <strong>very</strong> impressed.</em><br>
+            You're prepped. You're polished. You're approved.
+        </div>
+        """, unsafe_allow_html=True)
