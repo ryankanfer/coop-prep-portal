@@ -4,3 +4,4 @@ fpdf
 gspread
 oauth2client
 pydrive2
+streamlit>=1.31.0
