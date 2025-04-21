@@ -54,43 +54,39 @@ html::before {{
     content: "";
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0, 0, 0, 0.4);
+    background: rgba(0, 0, 0, 0.35);
     z-index: 0;
 }}
 
-.glassy-form {{
+.login-container {{
     background: rgba(255, 255, 255, 0.08);
     backdrop-filter: blur(14px);
-    border-radius: 18px;
-    padding: 2rem 2rem 2.5rem;
-    max-width: 400px;
-    margin: 4rem auto;
+    border-radius: 20px;
+    padding: 2.5rem 2rem;
+    max-width: 460px;
+    margin: 5vh auto;
     box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
-    position: relative;
+    text-align: center;
     z-index: 2;
 }}
 
-.logo-img {{
-    display: block;
-    margin: 0 auto 1.5rem;
-    width: 120px;
-    max-width: 200px;
+.login-logo {{
+    width: 90px;
+    margin-bottom: 1.5rem;
 }}
 
 .login-heading {{
-    font-size: 2.6rem;
+    font-size: 2.2rem;
     font-family: 'Playfair Display', serif;
     font-weight: 700;
-    text-align: center;
     margin-bottom: 0.5rem;
-    text-shadow: 0 0 10px rgba(0,0,0,0.45);
+    text-shadow: 0 0 10px rgba(0,0,0,0.4);
 }}
 
 .login-subhead {{
-    font-size: 1.1rem;
-    text-align: center;
+    font-size: 1rem;
+    color: #eeeeee;
     margin-bottom: 2rem;
-    color: #f1f1f1;
     text-shadow: 0 0 6px rgba(0,0,0,0.3);
 }}
 
@@ -102,12 +98,12 @@ html::before {{
     border: 1px solid rgba(255,255,255,0.3);
     padding: 0.5rem;
     font-family: 'Lato', sans-serif;
-    font-weight: 400;
 }}
 
 label, .stTextInput label, .stTextArea label {{
     color: #e0e0e0;
     font-weight: 300;
+    font-family: 'Lato', sans-serif;
 }}
 
 .stButton>button {{
@@ -121,6 +117,7 @@ label, .stTextInput label, .stTextArea label {{
     width: 100%;
     transition: all 0.3s ease-in-out;
     box-shadow: 0 0 0 rgba(0,0,0,0);
+    margin-top: 1rem;
 }}
 
 .stButton>button:hover {{
@@ -128,13 +125,7 @@ label, .stTextInput label, .stTextArea label {{
     box-shadow: 0 0 15px #a5b4fc;
 }}
 </style>
-""", unsafe_allow_html=True)
 
-st.markdown(f"""
-<img src="data:image/png;base64,{logo_data}" class="logo-img" />
-<h1 class="login-heading">NYC Co-op Interview<br>Prep Assistant</h1>
-<p class="login-subhead">The Board is Ready for You</p>
-<div class="glassy-form">
 """, unsafe_allow_html=True)
 
 # --- AUTHENTICATION ---
@@ -156,7 +147,7 @@ if not st.session_state.authenticated:
     st.stop()
 
 # --- FORM ---
-st.markdown('<div class="glassy-form">', unsafe_allow_html=True)
+st.markdown('<div class="login-container">', unsafe_allow_html=True)
 st.subheader("Fill this out — we'll handle the rest.")
 with st.form("prep_form"):
     name = st.text_input("Buyer Name")
