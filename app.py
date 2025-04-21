@@ -1,3 +1,4 @@
+
 import streamlit as st
 import openai
 import os
@@ -17,6 +18,7 @@ def get_base64_image(image_path):
 
 # --- CONFIGURATION ---
 client = openai.OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
+
 SCOPES = ["https://www.googleapis.com/auth/drive", "https://www.googleapis.com/auth/spreadsheets"]
 service_account_info = st.secrets["gcp_service_account"]
 credentials = ServiceAccountCredentials.from_json_keyfile_dict(dict(service_account_info), SCOPES)
@@ -24,24 +26,30 @@ client_sheet = gspread.authorize(credentials)
 drive_auth = GoogleAuth()
 drive_auth.credentials = credentials
 drive = GoogleDrive(drive_auth)
+
 FOLDER_ID = "1A2BcDeFgH_IJKlmnopQRstUvWX"
 SHEET_NAME = "Co-op Prep Submissions"
 sheet = client_sheet.open(SHEET_NAME).sheet1
 
 # --- PAGE SETTINGS ---
 st.set_page_config(page_title="NYC Co-op Interview Prep", layout="centered")
+
+# --- ASSET LOAD ---
 logo_data = get_base64_image("assets/tkt_logo.png")
 background_data = get_base64_image("assets/background.jpg")
 
+# --- CSS STYLING ---
 st.markdown(f"""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Lato:wght@300;400;600&display=swap');
+
 html, body, .stApp {{
     background: url("data:image/jpg;base64,{background_data}") no-repeat center center fixed;
     background-size: cover;
     font-family: 'Lato', sans-serif;
     color: #ffffff;
 }}
+
 html::before {{
     content: "";
     position: fixed;
@@ -49,38 +57,72 @@ html::before {{
     background: rgba(0, 0, 0, 0.35);
     z-index: 0;
 }}
+
+.glass-box {{
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-radius: 16px;
+    padding: 2rem;
+    width: 350px;
+    margin: 4vh auto;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+    position: relative;
+}}
+
+.glass-box img {{
+    position: absolute;
+    bottom: 10px;
+    right: 16px;
+    width: 48px;
+}}
+
+h1.login-heading {{
+    font-size: 2.6rem;
+    font-family: 'Playfair Display', serif;
+    font-weight: 700;
+    text-align: center;
+    margin-top: 6vh;
+    margin-bottom: 0.3em;
+    text-shadow: 0 0 10px rgba(0,0,0,0.45);
+}}
+
+p.login-subhead {{
+    font-size: 1.2rem;
+    text-align: center;
+    color: #f1f1f1;
+    margin-bottom: 2rem;
+    text-shadow: 0 0 6px rgba(0,0,0,0.3);
+}}
+
 .stTextInput > div > input,
 .stTextArea > div > textarea {{
     background-color: rgba(255,255,255,0.15);
     color: #ffffff;
-    border-radius: 8px;
+    border-radius: 6px;
     border: 1px solid rgba(255,255,255,0.3);
     padding: 0.5rem;
     font-family: 'Lato', sans-serif;
-    width: 70%;
-    margin: 0 auto;
-    display: block;
 }}
-label, .stTextInput label, .stTextArea label {{
+
+label, .stTextInput label {{
     color: #e0e0e0;
     font-weight: 300;
     font-family: 'Lato', sans-serif;
-    text-align: center;
-    display: block;
 }}
+
 .stButton>button {{
     background-color: #6366f1;
     color: #ffffff;
     font-family: 'Lato', sans-serif;
     font-weight: 600;
     font-size: 1rem;
-    border-radius: 8px;
-    padding: 0.5rem 1.5rem;
-    width: 30%;
-    display: block;
-    margin: 1.5rem auto 0;
+    border-radius: 6px;
+    padding: 0.5rem 1rem;
+    width: 100%;
     transition: all 0.3s ease-in-out;
 }}
+
 .stButton>button:hover {{
     transform: scale(1.03);
     box-shadow: 0 0 15px #a5b4fc;
@@ -88,12 +130,12 @@ label, .stTextInput label, .stTextArea label {{
 </style>
 """, unsafe_allow_html=True)
 
+# --- LOGIN HEADER ---
 st.markdown(f"""
-<div style='text-align: center; margin-top: 5vh;'>
-    <img src="data:image/png;base64,{logo_data}" style="width: 240px; margin-bottom: 1rem;" />
-    <h1 style='font-family: "Playfair Display", serif; font-size: 2.5rem; font-weight: bold;'>NYC Co-op Interview<br>Prep Assistant</h1>
-    <p style='font-size: 1rem; color: #ffffffaa;'>The Board is Ready for You</p>
-</div>
+<h1 class="login-heading">NYC Co-op Interview<br>Prep Assistant</h1>
+<p class="login-subhead">The Board is Ready for You</p>
+<div class="glass-box">
+    <img src="data:image/png;base64,{logo_data}" />
 """, unsafe_allow_html=True)
 
 # --- AUTHENTICATION ---
@@ -105,11 +147,13 @@ if not st.session_state.authenticated:
     username = st.text_input("Username")
     password = st.text_input("Password", type="password")
     if st.button("Login"):
-        if USERS.get(username.strip()) == password:
+        if USERS.get(username) == password:
             st.session_state.authenticated = True
         else:
             st.error("Invalid username or password. Try again or text Ryan directly for access.")
+    st.markdown("</div>", unsafe_allow_html=True)
     st.stop()
+st.markdown("</div>", unsafe_allow_html=True)
 
 # --- FORM ---
 st.subheader("Fill this out — we'll handle the rest.")
@@ -144,6 +188,7 @@ Assets: {profile['assets']}
 Personality: {profile['personality']}
 Residence: {profile['residence']}
 Building: {profile['building']}
+
 Please generate:
 1. Common board interview questions
 2. Tips for answering financial/personal Qs with grace
@@ -163,7 +208,9 @@ def generate_pdf(name, content, listing):
     pdf.set_font("Helvetica", size=12)
     pdf.image("assets/logo.png", 10, 8, 33)
     pdf.ln(20)
-    pdf.multi_cell(0, 10, f"Co-op Board Interview Prep for {name}\n\n" + content)
+    pdf.multi_cell(0, 10, f"Co-op Board Interview Prep for {name}
+
+" + content)
     if listing:
         pdf.ln(5)
         pdf.set_text_color(0, 0, 255)
@@ -198,9 +245,12 @@ if submitted:
         "residence": residence,
         "building": building
     }
+
     with st.spinner("Generating your co-op prep guide..."):
         guide = generate_prep_guide(profile)
+
     guide_edit = st.text_area("Review or edit your guide before finalizing:", value=guide, height=400)
+
     if st.button("Finalize PDF"):
         filepath = generate_pdf(name, guide_edit, listing)
         link = upload_to_drive(filepath, name)
