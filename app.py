@@ -69,11 +69,12 @@ st.markdown(f"""
         transform: scale(1.03);
     }}
 
-    .login-logo {{
-        display: block;
-        margin: 2rem auto 1rem;
-        width: 120px;
-    }}
+    ..login-logo {
+    display: block;
+    margin: 2rem auto 1rem;
+    width: 160px; /* bump from 120px */
+    filter: drop-shadow(0 0 6px rgba(0,0,0,0.6));
+    }
 
     h1, h3, .stSubheader, label {{
         text-align: center;
