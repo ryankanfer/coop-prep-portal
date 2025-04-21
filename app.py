@@ -5,8 +5,10 @@ import datetime
 from fpdf import FPDF
 from io import BytesIO
 
+# --- SETUP ---
 openai.api_key = st.secrets["OPENAI_API_KEY"]
 
+# --- IMAGES ---
 def get_base64_image(img_path):
     with open(img_path, "rb") as img:
         return base64.b64encode(img.read()).decode()
@@ -23,7 +25,7 @@ def set_background(image_path):
         </style>
     """, unsafe_allow_html=True)
 
-# Session state setup
+# --- SESSION ---
 if "stage" not in st.session_state:
     st.session_state.stage = "login"
 
@@ -33,13 +35,14 @@ if "buyer" not in st.session_state:
 if "responses" not in st.session_state:
     st.session_state.responses = {}
 
-# PAGE 1: LOGIN
+# --- PAGE 1: LOGIN ---
 if st.session_state.stage == "login":
     set_background("background.jpg")
     st.markdown("""
         <h1 style='text-align: center;'>NYC Co-op Interview Prep Assistant</h1>
         <p style='text-align: center;'>The Board is Ready for You</p>
     """, unsafe_allow_html=True)
+
     username = st.text_input("Username")
     password = st.text_input("Password", type="password")
     if st.button("Login"):
@@ -49,36 +52,33 @@ if st.session_state.stage == "login":
         else:
             st.error("Invalid credentials")
 
-# PAGE 1.5: ONBOARDING COPY
+# --- PAGE 2: ONBOARDING ---
 elif st.session_state.stage == "onboarding":
     set_background("background.jpg")
     st.markdown("""
-        <div style='background-color: rgba(255,255,255,0.05); padding: 2rem; border-radius: 12px;'>
         <h2 style='text-align: center;'>Welcome to the simulation.</h2>
-        <p style='font-size: 1.1rem;'>
-        Buying into a co-op in NYC? You’re not just buying a home — you’re buying shares in a corporation. And that corporation has a board that acts less like management… and more like a tight-knit neighborhood deciding if they want you at their block party.<br><br>
-
+        <p style='text-align: center; max-width: 700px; margin: 0 auto;'>
+        Buying into a co-op in NYC? You’re not just buying a home — you’re buying shares in a corporation.
+        And that corporation has a board that acts less like management… and more like a tight-knit neighborhood deciding if they want you at their block party.
+        <br><br>
         They’ve seen your application. They’ve reviewed your financials.<br>
-        But now? They want to see if you fit in.<br><br>
-
-        This app is your prep concierge.<br><br>
-
+        But now? They want to see if you fit in.
+        <br><br>
+        This app is your prep concierge.<br>
         You’ll enter a simulation modeled on actual co-op board interviews.<br>
         Expect questions about your money, lifestyle, pets, and how you plan to use the apartment.<br>
-        How you answer shapes how the board reacts.<br><br>
-
+        How you answer shapes how the board reacts.
+        <br><br>
         No paperwork. No pressure.<br>
         Just you, the board, and a little friendly judgment.
         </p>
-        <div style='text-align: center;'>
-            <button onclick="window.location.reload();" style='margin-top: 1.5rem; padding: 0.75rem 1.5rem; font-size: 1rem; background-color: #2f4f4f; color: white; border: none; border-radius: 8px;'>Enter Lobby</button>
-        </div>
-        </div>
     """, unsafe_allow_html=True)
-    st.session_state.stage = "lobby"
-    st.stop()
 
-# PAGE 2: LOBBY
+    if st.button("Enter Lobby"):
+        st.session_state.stage = "lobby"
+        st.rerun()
+
+# --- PAGE 3: LOBBY FORM ---
 elif st.session_state.stage == "lobby":
     set_background("lobby.jpg")
     st.markdown("""
@@ -102,7 +102,7 @@ elif st.session_state.stage == "lobby":
         st.session_state.stage = "interview"
         st.rerun()
 
-# PAGE 3: BOARD INTERVIEW
+# --- PAGE 4: INTERVIEW ---
 elif st.session_state.stage == "interview":
     set_background("board_interview.jpg")
     buyer = st.session_state.buyer
@@ -125,18 +125,26 @@ elif st.session_state.stage == "interview":
         <p style='text-align: center;'>You've been granted a seat. Let's see how the conversation unfolds.</p>
     """, unsafe_allow_html=True)
 
+    col1, col2 = st.columns(2)
     for idx, q in enumerate(st.session_state.questions):
-        st.markdown(f"**{q['member']}:** {q['question']}")
-        reply = st.text_area("Your Response:", key=f"reply_{idx}")
-        st.session_state.responses[q['member'] + '_' + q['trigger']] = reply
+        with col1 if idx % 2 == 0 else col2:
+            st.markdown(f"**{q['member']}:** {q['question']}")
+            reply = st.text_area("Your Response:", key=f"reply_{idx}")
+            st.session_state.responses[q['member'] + '_' + q['trigger']] = reply
 
-        if reply:
-            from random import choice
-            reactions = ["Thank you,", "Interesting.", "Noted.", "Appreciated."]
-            st.markdown(f"*{q['member']} reacts:* {choice(reactions)} {buyer['name']}.")
+            if reply:
+                reaction = openai.ChatCompletion.create(
+                    model="gpt-3.5-turbo",
+                    messages=[
+                        {"role": "system", "content": f"You are {q['member']}, a co-op board member."},
+                        {"role": "user", "content": f"The buyer said: '{reply}'. React in one short sentence."}
+                    ]
+                )
+                st.markdown(f"*{q['member']} reacts:* {reaction.choices[0].message['content']}")
+
+    st.markdown("<p style='text-align:center; color:#aaa;'>You're doing great.</p>", unsafe_allow_html=True)
 
     if st.button("Finish Interview & View Feedback"):
-
         def generate_feedback_pdf(name, responses):
             pdf = FPDF()
             pdf.add_page()
@@ -163,9 +171,8 @@ elif st.session_state.stage == "interview":
         pdf_file = generate_feedback_pdf(buyer['name'], st.session_state.responses)
         st.balloons()
         st.success(f"Board review complete. Welcome home, {buyer['name']}.")
-
         st.download_button(
-            label="\U0001F4E5 Download Board Summary",
+            label="\ud83d\udcc5 Download Board Summary",
             data=pdf_file.getvalue(),
             file_name=f"{buyer['name'].replace(' ', '_')}_Board_Feedback.pdf",
             mime="application/pdf"
