@@ -142,21 +142,30 @@ elif st.session_state.stage == "interview":
         def generate_feedback_pdf(name, responses):
             pdf = FPDF()
             pdf.add_page()
-            pdf.set_font("Arial", size=12)
-            pdf.cell(200, 10, txt=f"Board Feedback for {name}", ln=True, align="C")
-            pdf.ln(10)
-            for q in st.session_state.questions:
-                pdf.multi_cell(0, 10, f"{q['member']}: {q['question']}\nYou: {responses[q['member'] + '_' + q['trigger']]}\n")
+            pdf.set_font("Helvetica", size=12)
+            pdf.cell(0, 10, f"Board Interview Feedback for {name}", ln=True)
             pdf.ln(5)
-            pdf.set_text_color(100, 100, 100)
-            pdf.cell(0, 10, f"Prepared by Ryan Kanfer | @ryanxkanfer | {datetime.datetime.now().strftime('%Y-%m-%d %H:%M')}", align='C')
+
+            for idx, (key, answer) in enumerate(responses.items(), start=1):
+                member, topic = key.split('_')
+                question_text = next((q["question"] for q in st.session_state.questions if q["member"] == member and q["trigger"] == topic), None)
+                if question_text:
+                    pdf.multi_cell(0, 10, f"Q{idx}: {question_text}\nA: {answer}\n")
+
+            pdf.ln(5)
+            pdf.set_text_color(50, 50, 50)
+            pdf.set_font("Helvetica", style='I', size=11)
+            pdf.cell(0, 10, "Final Note: Welcome home.", ln=True)
+
             output = BytesIO()
-            pdf.output(output)
+            pdf.output(output, 'F')
+            output.seek(0)
             return output
 
         pdf_file = generate_feedback_pdf(buyer['name'], st.session_state.responses)
         st.balloons()
         st.success(f"Board review complete. Welcome home, {buyer['name']}.")
+
         st.download_button(
             label="📥 Download Board Summary",
             data=pdf_file.getvalue(),
