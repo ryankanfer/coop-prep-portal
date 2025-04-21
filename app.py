@@ -71,7 +71,7 @@ html::before {{
 }}
 
 .login-logo {{
-    width: 90px;
+    width: 120px;
     margin-bottom: 1.5rem;
 }}
 
@@ -125,7 +125,13 @@ label, .stTextInput label, .stTextArea label {{
     box-shadow: 0 0 15px #a5b4fc;
 }}
 </style>
+""", unsafe_allow_html=True)
 
+st.markdown(f"""
+<div class="login-container">
+    <img src="data:image/png;base64,{logo_data}" class="login-logo" />
+    <h1 class="login-heading">NYC Co-op Interview<br>Prep Assistant</h1>
+    <p class="login-subhead">The Board is Ready for You</p>
 """, unsafe_allow_html=True)
 
 # --- AUTHENTICATION ---
@@ -134,8 +140,8 @@ if "authenticated" not in st.session_state:
     st.session_state.authenticated = False
 
 if not st.session_state.authenticated:
-    username = st.text_input("\U0001F464 Username")
-    password = st.text_input("\U0001F512 Password", type="password")
+    username = st.text_input("👤 Username")
+    password = st.text_input("🔒 Password", type="password")
 
     if st.button("Login"):
         if USERS.get(username) == password:
