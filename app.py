@@ -50,22 +50,16 @@ html::before {{
     z-index: 0;
 }}
 
-.login-overlay {{
-    position: relative;
-    z-index: 1;
-    text-align: center;
-    margin-bottom: 2rem;
-}}
-
-/* === Logo Animation === */
+/* === Logo Animation & Sizing === */
 .login-logo {{
     opacity: 0;
     transform: translateY(20px);
     animation: logoFadeIn 1.5s ease-out forwards;
     animation-delay: 0.5s;
     display: block;
-    margin: 0 auto 1rem;
-    width: 120px;
+    margin: 0 auto 1.5rem;
+    width: 180px;
+    max-width: 90%;
 }}
 
 @keyframes logoFadeIn {{
@@ -88,9 +82,9 @@ h1, h3 {{
     }}
 }}
 
-/* === Background + Font === */
+/* === Background Image (Base64) === */
 html, body, .stApp {{
-    background: url('assets/background.jpg') no-repeat center center fixed;
+    background: url("data:image/jpg;base64,{background_data}") no-repeat center center fixed;
     background-size: cover;
     font-family: 'Lato', sans-serif;
     color: #ffffff;
