@@ -49,7 +49,7 @@ def generate_board_questions(name, building):
 
 # --- PAGE: LOGIN ---
 if st.session_state.stage == "login":
-    set_background("/mnt/data/background.jpg")
+    set_background("background.jpg")
     st.markdown("""
         <h1 style='text-align: center; color: white;'>NYC Co-op Interview<br>Prep Assistant</h1>
         <p style='text-align: center; color: white;'>The Board is Ready for You</p>
@@ -76,7 +76,7 @@ if st.session_state.stage == "login":
 
 # --- PAGE: LOBBY INPUT ---
 elif st.session_state.stage == "lobby":
-    set_background("/mnt/data/lobby.jpg")
+    set_background("lobby.jpg")
     st.markdown("""
         <h2 style='text-align: center; color: white;'>Welcome to the Lobby</h2>
         <p style='text-align: center; color: white;'>The doorman will see you in now.</p>
@@ -97,7 +97,7 @@ elif st.session_state.stage == "lobby":
 
 # --- PAGE: INTERVIEW ---
 elif st.session_state.stage == "interview":
-    set_background("/mnt/data/board_interview.jpg")
+    set_background("board_interview.jpg")
     st.markdown("""
         <h2 style='text-align: center; color: white;'>The Interview Begins</h2>
         <p style='text-align: center; color: white;'>Your responses will determine your fate.</p>
