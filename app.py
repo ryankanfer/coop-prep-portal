@@ -40,56 +40,92 @@ logo_data = get_base64_image("assets/tkt_logo.png")
 background_data = get_base64_image("assets/background.jpg")
 
 st.markdown(f"""
-    <style>
-    html, body, .stApp {{
-        background: url("data:image/jpg;base64,{background_data}") no-repeat center center fixed;
-        background-size: cover;
-        font-family: 'Lato', sans-serif;
-        color: #ffffff;
-    }}
+<style>
+/* === Background Overlay === */
+html::before {{
+    content: "";
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 0;
+}}
 
-    .stTextInput > div > input,
-    .stTextArea > div > textarea {{
-        background-color: #ffffffcc;
-        color: #2F4F4F !important;
-        border-radius: 8px;
-        font-family: 'Lato', sans-serif;
-    }}
+.login-overlay {{
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    margin-bottom: 2rem;
+}}
 
-    .stButton>button {{
-        background-color: #ffffff;
-        color: #2F4F4F;
-        border-radius: 8px;
-        font-weight: bold;
-        transition: all 0.3s ease-in-out;
-    }}
+/* === Logo Animation === */
+.login-logo {{
+    opacity: 0;
+    transform: translateY(20px);
+    animation: logoFadeIn 1.5s ease-out forwards;
+    animation-delay: 0.5s;
+    display: block;
+    margin: 0 auto 1rem;
+    width: 120px;
+}}
 
-    .stButton>button:hover {{
-        box-shadow: 0 0 10px rgba(255, 255, 255, 0.4);
-        transform: scale(1.03);
+@keyframes logoFadeIn {{
+    to {{
+        opacity: 1;
+        transform: translateY(0);
     }}
+}}
 
-    .login-logo {{
-        display: block;
-        margin: 2rem auto 1rem;
-        width: 160px; /* bump from 120px */
-        filter: drop-shadow(0 0 6px rgba(0,0,0,0.6));
+/* === Headline + Subhead Fade === */
+h1, h3 {{
+    opacity: 0;
+    animation: textFadeIn 1.2s ease-out forwards;
+    animation-delay: 1.2s;
+}}
+
+@keyframes textFadeIn {{
+    to {{
+        opacity: 1;
     }}
+}}
 
-    h1, h3, .stSubheader, label {{
-        text-align: center;
-        color: #ffffff !important;
-    }}
+/* === Background + Font === */
+html, body, .stApp {{
+    background: url('assets/background.jpg') no-repeat center center fixed;
+    background-size: cover;
+    font-family: 'Lato', sans-serif;
+    color: #ffffff;
+}}
 
-    @keyframes fadeIn {{
-        from {{ opacity: 0; transform: translateY(20px); }}
-        to {{ opacity: 1; transform: translateY(0); }}
-    }}
-    </style>
+/* === Form Field Styling === */
+.stTextInput > div > input,
+.stTextArea > div > textarea {{
+    background-color: #ffffffcc;
+    color: #2F4F4F !important;
+    border-radius: 8px;
+    font-family: 'Lato', sans-serif;
+}}
 
+/* === Button Styling === */
+.stButton>button {{
+    background-color: #ffffff;
+    color: #2F4F4F;
+    border-radius: 8px;
+    font-weight: bold;
+    transition: all 0.3s ease-in-out;
+}}
+
+.stButton>button:hover {{
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.4);
+    transform: scale(1.03);
+}}
+</style>
+""", unsafe_allow_html=True)
+st.markdown(f"""
+<div class="login-overlay">
     <img src="data:image/png;base64,{logo_data}" class="login-logo" />
     <h1>The Boardroom is Calling</h1>
     <h3>This isn’t a checklist. It’s your prep concierge.</h3>
+</div>
 """, unsafe_allow_html=True)
 
 # --- AUTHENTICATION ---
