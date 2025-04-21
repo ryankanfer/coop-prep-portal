@@ -39,7 +39,7 @@ st.set_page_config(page_title="NYC Co-op Interview Prep", layout="centered")
 logo_data = get_base64_image("assets/tkt_logo.png")
 background_data = get_base64_image("assets/background.jpg")
 
-st.markdown(f"""
+st.markdown(f""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Lato:wght@300;400;600&display=swap');
 
