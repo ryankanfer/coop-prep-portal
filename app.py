@@ -58,85 +58,67 @@ html::before {{
     z-index: 0;
 }}
 
-.glass-box {{
-    background: rgba(255, 255, 255, 0.08);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border-radius: 16px;
-    padding: 2rem;
-    width: 350px;
-    margin: 4vh auto;
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
-    position: relative;
-}}
-
-.glass-box img {{
-    position: absolute;
-    bottom: 10px;
-    right: 16px;
-    width: 48px;
-}}
-
-h1.login-heading {{
-    font-size: 2.6rem;
+.login-title {{
+    font-size: 2.5rem;
     font-family: 'Playfair Display', serif;
     font-weight: 700;
     text-align: center;
     margin-top: 6vh;
     margin-bottom: 0.3em;
-    text-shadow: 0 0 10px rgba(0,0,0,0.45);
 }}
 
-p.login-subhead {{
-    font-size: 1.2rem;
+.login-subtitle {{
+    font-size: 1.1rem;
     text-align: center;
-    color: #f1f1f1;
     margin-bottom: 2rem;
-    text-shadow: 0 0 6px rgba(0,0,0,0.3);
+    color: #f0f0f0;
 }}
 
-.stTextInput > div > input,
-.stTextArea > div > textarea {{
-    background-color: rgba(255,255,255,0.15);
+.login-card {{
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-radius: 16px;
+    padding: 2rem;
+    max-width: 400px;
+    margin: 0 auto;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+}}
+
+.login-card .stTextInput > div > input,
+.login-card .stTextArea > div > textarea {{
+    background-color: rgba(0, 0, 0, 0.3);
     color: #ffffff;
-    border-radius: 6px;
-    border: 1px solid rgba(255,255,255,0.3);
-    padding: 0.5rem;
-    font-family: 'Lato', sans-serif;
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.2);
 }}
 
-label, .stTextInput label {{
-    color: #e0e0e0;
-    font-weight: 300;
-    font-family: 'Lato', sans-serif;
-}}
-
-.stButton>button {{
+.login-card .stButton > button {{
     background-color: #6366f1;
     color: #ffffff;
-    font-family: 'Lato', sans-serif;
     font-weight: 600;
     font-size: 1rem;
-    border-radius: 6px;
-    padding: 0.5rem 1rem;
-    width: 100%;
-    transition: all 0.3s ease-in-out;
+    border-radius: 10px;
+    padding: 0.6rem 1.5rem;
+    margin-top: 1rem;
+    transition: all 0.3s ease;
 }}
 
-.stButton>button:hover {{
-    transform: scale(1.03);
-    box-shadow: 0 0 15px #a5b4fc;
+.login-card .stButton > button:hover {{
+    transform: scale(1.04);
+    box-shadow: 0 0 14px #a5b4fc;
 }}
 </style>
 """, unsafe_allow_html=True)
 
-# --- LOGIN HEADER ---
+# Header + Subheader
 st.markdown(f"""
-<h1 class="login-heading">NYC Co-op Interview<br>Prep Assistant</h1>
-<p class="login-subhead">The Board is Ready for You</p>
-<div class="glass-box">
-    <img src="data:image/png;base64,{logo_data}" />
+<h1 class="login-title">NYC Co-op Interview<br>Prep Assistant</h1>
+<p class="login-subtitle">The Board is Ready for You</p>
 """, unsafe_allow_html=True)
+
+# Glassy input card
+st.markdown('<div class="login-card">', unsafe_allow_html=True)
 
 # --- AUTHENTICATION ---
 USERS = {"client": "interviewready25"}
@@ -146,14 +128,15 @@ if "authenticated" not in st.session_state:
 if not st.session_state.authenticated:
     username = st.text_input("Username")
     password = st.text_input("Password", type="password")
+
     if st.button("Login"):
-        if USERS.get(username) == password:
+        if USERS.get(username.strip()) == password:
             st.session_state.authenticated = True
         else:
             st.error("Invalid username or password. Try again or text Ryan directly for access.")
+
     st.markdown("</div>", unsafe_allow_html=True)
     st.stop()
-st.markdown("</div>", unsafe_allow_html=True)
 
 # --- FORM ---
 st.subheader("Fill this out — we'll handle the rest.")
