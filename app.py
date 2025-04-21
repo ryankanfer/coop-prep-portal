@@ -19,7 +19,6 @@ def get_base64_image(image_path):
 
 # --- CONFIGURATION ---
 client = openai.OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
-
 SCOPES = ["https://www.googleapis.com/auth/drive", "https://www.googleapis.com/auth/spreadsheets"]
 service_account_info = st.secrets["gcp_service_account"]
 credentials = ServiceAccountCredentials.from_json_keyfile_dict(dict(service_account_info), SCOPES)
@@ -35,10 +34,11 @@ sheet = client_sheet.open(SHEET_NAME).sheet1
 # --- PAGE SETTINGS ---
 st.set_page_config(page_title="NYC Co-op Interview Prep", layout="centered")
 
-# --- CSS STYLING ---
+# --- ASSETS ---
 logo_data = get_base64_image("assets/tkt_logo.png")
 background_data = get_base64_image("assets/background.jpg")
 
+# --- CSS + HEADER ---
 st.markdown(f"""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Lato:wght@300;400;600&display=swap');
@@ -68,16 +68,26 @@ html::before {{
     box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
     position: relative;
     z-index: 2;
+    text-align: center;
+}}
+
+.login-logo {{
+    width: 120px;
+    margin: 0 auto 1.5rem;
+    display: block;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeIn 1.5s ease-out forwards;
 }}
 
 .login-heading {{
-    font-size: 2.8rem;
+    font-size: 2.6rem;
     font-family: 'Playfair Display', serif;
     font-weight: 700;
     text-align: center;
-    margin-top: 8vh;
-    margin-bottom: 0.2em;
+    margin-bottom: 0.4em;
     text-shadow: 0 0 10px rgba(0,0,0,0.45);
+    animation: fadeIn 1.8s ease-out forwards;
 }}
 
 .login-subhead {{
@@ -87,6 +97,14 @@ html::before {{
     margin-bottom: 2em;
     color: #f1f1f1;
     text-shadow: 0 0 6px rgba(0,0,0,0.3);
+    animation: fadeIn 2s ease-out forwards;
+}}
+
+@keyframes fadeIn {{
+    to {{
+        opacity: 1;
+        transform: translateY(0);
+    }}
 }}
 
 .stTextInput > div > input,
@@ -97,7 +115,6 @@ html::before {{
     border: 1px solid rgba(255,255,255,0.3);
     padding: 0.5rem;
     font-family: 'Lato', sans-serif;
-    font-weight: 400;
 }}
 
 label, .stTextInput label, .stTextArea label {{
@@ -124,7 +141,6 @@ label, .stTextInput label, .stTextArea label {{
     box-shadow: 0 0 15px #a5b4fc;
 }}
 
-/* Success message and confetti alignment */
 .stAlert, .stMarkdown > div {{
     text-align: center;
 }}
@@ -132,9 +148,10 @@ label, .stTextInput label, .stTextArea label {{
 """, unsafe_allow_html=True)
 
 st.markdown(f"""
-<h1 class="login-heading">NYC Co-op Interview<br>Prep Assistant</h1>
-<p class="login-subhead">The Board is Ready for You</p>
 <div class="login-container">
+    <img src="data:image/png;base64,{logo_data}" class="login-logo" />
+    <h1 class="login-heading">NYC Co-op Interview<br>Prep Assistant</h1>
+    <p class="login-subhead">The Board is Ready for You</p>
 """, unsafe_allow_html=True)
 
 # --- AUTHENTICATION ---
@@ -145,13 +162,11 @@ if "authenticated" not in st.session_state:
 if not st.session_state.authenticated:
     username = st.text_input("👤 Username")
     password = st.text_input("🔒 Password", type="password")
-
     if st.button("Login"):
         if USERS.get(username) == password:
             st.session_state.authenticated = True
         else:
             st.error("Invalid username or password. Try again or text Ryan directly for access.")
-
     st.markdown("</div>", unsafe_allow_html=True)
     st.stop()
 
@@ -255,43 +270,13 @@ if submitted:
         log_to_sheet(name, building, listing)
         with open(filepath, "rb") as f:
             st.success("✨ Done! Here’s your download:")
-            st.markdown("""
-    <style>
-    .success-checkmark {
-      width: 80px;
-      height: 80px;
-      border-radius: 50%;
-      display: block;
-      stroke-width: 2;
-      stroke: #fff;
-      stroke-miterlimit: 10;
-      margin: 20px auto;
-      box-shadow: inset 0px 0px 0px #2F4F4F;
-      animation: fill .4s ease-in-out .4s forwards, scale .3s ease-in-out .9s both;
-    }
-    @keyframes fill {
-      100% { box-shadow: inset 0px 0px 0px 30px #2F4F4F; }
-    }
-    @keyframes scale {
-      0%, 100% { transform: none; }
-      50% { transform: scale(1.1); }
-    }
-    </style>
-    <svg class="success-checkmark" viewBox="0 0 52 52">
-      <path fill="none" d="M26,1 C39.255,1 50,11.745 50,25 C50,38.255 39.255,49 26,49 C12.745,49 2,38.255 2,25 C2,11.745 12.745,1 26,1 Z"/>
-      <path fill="none" d="M14,27 L22,34 L38,16" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>
-""", unsafe_allow_html=True)
             st.download_button("📥 Download PDF", f, file_name=filepath, mime="application/pdf", use_container_width=True)
         st.info(f"A copy was saved to Google Drive here: {link}")
-
-        # 🎉 Add confetti
         st.balloons()
-
-        # 💬 Add final message
         st.markdown("""
         <div style="margin-top: 2rem; text-align: center; font-size: 1.2rem; font-family: 'Playfair Display', serif; color: #ffffff;">
             <em>The board will be <strong>very</strong> impressed.</em><br>
             You're prepped. You're polished. You're approved.
         </div>
         """, unsafe_allow_html=True)
+
