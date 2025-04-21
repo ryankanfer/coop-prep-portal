@@ -41,10 +41,12 @@ background_data = get_base64_image("assets/background.jpg")
 
 st.markdown(f"""
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Lato:wght@300;400;600&display=swap');
+
 html, body, .stApp {{
     background: url("data:image/jpg;base64,{background_data}") no-repeat center center fixed;
     background-size: cover;
-    font-family: 'Playfair Display', serif;
+    font-family: 'Lato', sans-serif;
     color: #ffffff;
 }}
 
@@ -52,85 +54,105 @@ html::before {{
     content: "";
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0, 0, 0, 0.35);
+    background: rgba(0, 0, 0, 0.4);
     z-index: 0;
 }}
 
-.login-overlay {{
+.login-container {{
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(14px);
+    border-radius: 18px;
+    padding: 2rem 2rem 2.5rem;
+    max-width: 400px;
+    margin: 3rem auto;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
     position: relative;
-    z-index: 1;
-    text-align: center;
-    margin: 5vh auto 2rem;
+    z-index: 2;
 }}
 
-.login-title {{
+.login-heading {{
     font-size: 2.8rem;
-    font-weight: 600;
-    margin-bottom: 1.5rem;
-    color: #ffffff;
-    text-shadow: 0 0 10px rgba(0,0,0,0.6);
+    font-family: 'Playfair Display', serif;
+    font-weight: 700;
+    text-align: center;
+    margin-top: 8vh;
+    margin-bottom: 0.2em;
+    text-shadow: 0 0 10px rgba(0,0,0,0.45);
 }}
 
-.stTextInput, .stTextArea {{
-    background: rgba(255, 255, 255, 0.15);
-    backdrop-filter: blur(10px);
-    border-radius: 12px;
-    padding: 1rem;
+.login-subhead {{
+    font-size: 1.2rem;
+    font-weight: 400;
+    text-align: center;
+    margin-bottom: 2em;
+    color: #f1f1f1;
+    text-shadow: 0 0 6px rgba(0,0,0,0.3);
 }}
 
 .stTextInput > div > input,
 .stTextArea > div > textarea {{
-    background-color: rgba(255, 255, 255, 0.25);
+    background-color: rgba(255,255,255,0.15);
     color: #ffffff;
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.3);
+    padding: 0.5rem;
     font-family: 'Lato', sans-serif;
-    border: none;
+    font-weight: 400;
 }}
 
 label, .stTextInput label, .stTextArea label {{
-    color: #ffffff;
+    color: #e0e0e0;
     font-weight: 300;
+    font-family: 'Lato', sans-serif;
 }}
 
 .stButton>button {{
     background-color: #6366f1;
     color: #ffffff;
+    font-family: 'Lato', sans-serif;
     font-weight: 600;
+    font-size: 1rem;
     border-radius: 8px;
+    padding: 0.5rem 1.5rem;
+    width: 100%;
     transition: all 0.3s ease-in-out;
+    box-shadow: 0 0 0 rgba(0,0,0,0);
 }}
 
 .stButton>button:hover {{
-    transform: scale(1.04);
-    box-shadow: 0 0 12px #a5b4fc;
+    transform: scale(1.03);
+    box-shadow: 0 0 15px #a5b4fc;
 }}
 
+/* Success message and confetti alignment */
+.stAlert, .stMarkdown > div {{
+    text-align: center;
+}}
 </style>
 """, unsafe_allow_html=True)
+
 st.markdown(f"""
-<div class="login-overlay">
-    <h1 class="login-title">NYC Co-op Interview<br>Prep Assistant</h1>
-</div>
-""", unsafe_allow_html=True)
-st.markdown(f"""
-<div class="login-overlay">
-    <img src="data:image/png;base64,{logo_data}" class="login-logo" />
-    <h1>The Boardroom is Calling</h1>
-    <h3>This isn’t a checklist. It’s your prep concierge.</h3>
-</div>
+<h1 class="login-heading">NYC Co-op Interview<br>Prep Assistant</h1>
+<p class="login-subhead">The Board is Ready for You</p>
+<div class="login-container">
 """, unsafe_allow_html=True)
 
 # --- AUTHENTICATION ---
 USERS = {"client": "interviewready25"}
 if "authenticated" not in st.session_state:
     st.session_state.authenticated = False
+
 if not st.session_state.authenticated:
     username = st.text_input("👤 Username")
     password = st.text_input("🔒 Password", type="password")
+
     if st.button("Login"):
         if USERS.get(username) == password:
             st.session_state.authenticated = True
         else:
             st.error("Invalid username or password. Try again or text Ryan directly for access.")
+
+    st.markdown("</div>", unsafe_allow_html=True)
     st.stop()
 
 # --- FORM ---
