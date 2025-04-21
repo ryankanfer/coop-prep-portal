@@ -108,7 +108,7 @@ elif st.session_state.page == "lobby":
             "pets": pets
         }
         st.session_state.page = "board"
-        st.experimental_rerun()
+        st.rerun()
 
 # --- BOARD INTERVIEW SIMULATION ---
 elif st.session_state.page == "board":
