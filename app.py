@@ -28,10 +28,10 @@ def set_background(image_path):
 
 # --- TIPS ---
 TIPS = [
-    "\ud83e\udde0 Know your debt-to-income ratio.",
-    "\ud83d\udcc8 Be prepared to explain any large financial gifts.",
-    "\ud83d\udcbc Dress like you're already on the board.",
-    "\ud83c\udfe0 Know the building rules and pet policies."
+    "Know your debt-to-income ratio.",
+    "Be prepared to explain any large financial gifts.",
+    "Dress like you're already on the board.",
+    "Know the building rules and pet policies."
 ]
 
 # --- OPENAI SETUP ---
