@@ -38,7 +38,7 @@ if "responses" not in st.session_state:
 
 # --- PAGE 1: LOGIN ---
 if st.session_state.stage == "login":
-    set_background("/mnt/data/background.jpg")
+    set_background("background.jpg")  
     st.markdown("""
         <h1 style='text-align: center;'>NYC Co-op Interview Prep Assistant</h1>
         <p style='text-align: center;'>The Board is Ready for You</p>
@@ -55,7 +55,7 @@ if st.session_state.stage == "login":
 
 # --- PAGE 2: LOBBY ---
 elif st.session_state.stage == "lobby":
-    set_background("/mnt/data/lobby.jpg")
+    set_background("lobby.jpg")
     st.markdown("""
         <h1 style='text-align: center;'>Welcome to the Lobby</h1>
         <p style='text-align: center;'>The doorman will see you in now.</p>
@@ -79,7 +79,7 @@ elif st.session_state.stage == "lobby":
 
 # --- PAGE 3: BOARD INTERVIEW ---
 elif st.session_state.stage == "interview":
-    set_background("/mnt/data/board_interview.jpg")
+    set_background("board_interview.jpg")
     buyer = st.session_state.buyer
 
     def get_questions():
