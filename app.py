@@ -37,59 +37,20 @@ st.set_page_config(page_title="NYC Co-op Interview Prep", layout="centered")
 
 # --- CSS STYLING ---
 logo_data = get_base64_image("assets/tkt_logo.png")
+background_data = get_base64_image("assets/background.jpg")
 
 st.markdown(f"""
     <style>
     html, body, .stApp {{
-        background: url('assets/background.jpg') no-repeat center center fixed;
+        background: url("data:image/jpg;base64,{background_data}") no-repeat center center fixed;
         background-size: cover;
         font-family: 'Lato', sans-serif;
         color: #ffffff;
     }}
 
-    .login-container {{
-        background: rgba(255, 255, 255, 0.08);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        border-radius: 16px;
-        padding: 3rem 2rem;
-        backdrop-filter: blur(12px);
-        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
-        max-width: 450px;
-        margin: 6vh auto;
-        animation: fadeIn 1.2s ease-in-out;
-        position: relative;
-    }}
-
-    .login-container::before {{
-        content: "";
-        background-image: url("data:image/png;base64,{logo_data}");
-        background-size: 120px;
-        background-repeat: no-repeat;
-        background-position: center top;
-        display: block;
-        height: 120px;
-        margin-bottom: 2rem;
-    }}
-
-    h1 {{
-        font-family: 'Playfair Display', serif;
-        font-size: 42px;
-        letter-spacing: 1px;
-        text-align: center;
-        margin-bottom: 0.2em;
-    }}
-
-    h3 {{
-        font-family: 'Lato', sans-serif;
-        font-weight: 300;
-        text-align: center;
-        font-size: 1.1rem;
-        margin-bottom: 2em;
-        color: #f0f0f0;
-    }}
-
-    input, .stTextInput input, .stTextInput textarea {{
-        background-color: #ffffffdd !important;
+    .stTextInput > div > input,
+    .stTextArea > div > textarea {{
+        background-color: #ffffffcc;
         color: #2F4F4F !important;
         border-radius: 8px;
         font-family: 'Lato', sans-serif;
@@ -108,16 +69,26 @@ st.markdown(f"""
         transform: scale(1.03);
     }}
 
+    .login-logo {{
+        display: block;
+        margin: 2rem auto 1rem;
+        width: 120px;
+    }}
+
+    h1, h3, .stSubheader, label {{
+        text-align: center;
+        color: #ffffff !important;
+    }}
+
     @keyframes fadeIn {{
         from {{ opacity: 0; transform: translateY(20px); }}
         to {{ opacity: 1; transform: translateY(0); }}
     }}
     </style>
 
-    <div class="login-container">
-        <h1>The Boardroom is Calling</h1>
-        <h3>This isn’t a checklist. It’s your prep concierge.</h3>
-    </div>
+    <img src="data:image/png;base64,{logo_data}" class="login-logo" />
+    <h1>The Boardroom is Calling</h1>
+    <h3>This isn’t a checklist. It’s your prep concierge.</h3>
 """, unsafe_allow_html=True)
 
 # --- AUTHENTICATION ---
