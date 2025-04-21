@@ -49,16 +49,6 @@ html::before {{
     background: rgba(0, 0, 0, 0.35);
     z-index: 0;
 }}
-.glassy-form {{
-    background: rgba(255, 255, 255, 0.08);
-    backdrop-filter: blur(14px);
-    border-radius: 20px;
-    padding: 2rem;
-    max-width: 500px;
-    margin: 4vh auto;
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
-    z-index: 2;
-}}
 .stTextInput > div > input,
 .stTextArea > div > textarea {{
     background-color: rgba(255,255,255,0.15);
@@ -68,11 +58,15 @@ html::before {{
     padding: 0.5rem;
     font-family: 'Lato', sans-serif;
     width: 70%;
+    margin: 0 auto;
+    display: block;
 }}
 label, .stTextInput label, .stTextArea label {{
     color: #e0e0e0;
     font-weight: 300;
     font-family: 'Lato', sans-serif;
+    text-align: center;
+    display: block;
 }}
 .stButton>button {{
     background-color: #6366f1;
@@ -82,8 +76,9 @@ label, .stTextInput label, .stTextArea label {{
     font-size: 1rem;
     border-radius: 8px;
     padding: 0.5rem 1.5rem;
-    width: 70%;
-    margin-top: 1rem;
+    width: 30%;
+    display: block;
+    margin: 1.5rem auto 0;
     transition: all 0.3s ease-in-out;
 }}
 .stButton>button:hover {{
@@ -95,7 +90,7 @@ label, .stTextInput label, .stTextArea label {{
 
 st.markdown(f"""
 <div style='text-align: center; margin-top: 5vh;'>
-    <img src="data:image/png;base64,{logo_data}" style="width: 80px; margin-bottom: 1rem;" />
+    <img src="data:image/png;base64,{logo_data}" style="width: 240px; margin-bottom: 1rem;" />
     <h1 style='font-family: "Playfair Display", serif; font-size: 2.5rem; font-weight: bold;'>NYC Co-op Interview<br>Prep Assistant</h1>
     <p style='font-size: 1rem; color: #ffffffaa;'>The Board is Ready for You</p>
 </div>
@@ -107,20 +102,16 @@ if "authenticated" not in st.session_state:
     st.session_state.authenticated = False
 
 if not st.session_state.authenticated:
-    with st.container():
-        st.markdown('<div class="glassy-form">', unsafe_allow_html=True)
-        username = st.text_input("Username")
-        password = st.text_input("Password", type="password")
-        if st.button("Login"):
-            if USERS.get(username.strip()) == password:
-                st.session_state.authenticated = True
-            else:
-                st.error("Invalid username or password. Try again or text Ryan directly for access.")
-        st.markdown('</div>', unsafe_allow_html=True)
+    username = st.text_input("Username")
+    password = st.text_input("Password", type="password")
+    if st.button("Login"):
+        if USERS.get(username.strip()) == password:
+            st.session_state.authenticated = True
+        else:
+            st.error("Invalid username or password. Try again or text Ryan directly for access.")
     st.stop()
 
 # --- FORM ---
-st.markdown('<div class="glassy-form">', unsafe_allow_html=True)
 st.subheader("Fill this out — we'll handle the rest.")
 with st.form("prep_form"):
     name = st.text_input("Buyer Name")
@@ -133,7 +124,6 @@ with st.form("prep_form"):
     listing = st.text_input("StreetEasy Link (optional — paste it in for a pretty PDF)")
     file = st.file_uploader("Optional: Upload resume or personal letter")
     submitted = st.form_submit_button("Get me approved")
-st.markdown('</div>', unsafe_allow_html=True)
 
 # --- HELPER FUNCTIONS ---
 def sanitize_filename(name):
